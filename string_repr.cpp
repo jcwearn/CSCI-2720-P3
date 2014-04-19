@@ -9,16 +9,55 @@ struct table {
     int value;
 };
 
+struct node {
+  node * left_child;
+  node * right_child;
+  int frequency;
+  int value;
+  int ascii;
+};
+
 //function to sort table<vector>
 bool compare_table(const table& a, const table& b) {
-    return a.value > b.value;
+    return a.value < b.value;
 }
 
 class String_repr {
 private:
+  vector<table> freq;
+  vector<node> trees;
+  int table_size;
   
 public:
+  String_repr();
+  String_repr(vector<table> t, int size);
+
+  void init_nodes() {
+    int i;
+    for(i = 0; i < table_size; i++) {
+      node n = {NULL,NULL,freq[i].value,0,freq[i].ascii};
+      trees.push_back(n);
+    }
+  }
+
+  void makeCode() {
+    int vector_size = trees.size();
+    
+    while(vector_size != 0) {
+      int sum = trees.at(0).frequency + trees.at(1).frequency;
+      node n = {&trees.at(0), &trees.at(1), sum, 0, -1};
+      trees.at(1).value = 1;
+
+      trees.erase(trees.begin(),trees.begin()+1);
+      trees.push_back(n);
+    }
+  }
 };
+
+String_repr::String_repr(vector<table> t, int size) {
+  freq = t;
+  table_size = size;
+}
 
 class Freq_table {
 private:  
@@ -40,6 +79,15 @@ public:
       cout << "Freq of " << c << " : " << freq_resized[i].value << endl; 
     }
   }
+
+  int get_table_size() {
+    return table_size;
+  }
+
+  //returns the freq_resized vector
+  vector<table> get_freq() {
+    return freq_resized;
+  }
   
   /*
   void delete_freq_resized() {
@@ -47,6 +95,7 @@ public:
     }*/
 };
 
+//initializer for Freq_table
 Freq_table::Freq_table(string s) {
   int i,j;
   int ascii;
