@@ -12,7 +12,7 @@ struct table {
 
 struct library {
   int ascii;
-  int bit_string;
+  string bit_string;
 };
 
 struct node {
@@ -37,30 +37,11 @@ bool compare_node(const node& a, const node& b) {
 class String_repr {
 private:
   vector<table> freq;
-  vector<library> libr;
+  vector<library> lib;
   vector<node*> trees;
   int table_size;
   int tree_size;
   node * root;
-
-  void printInOrderPrivate(node * root){
-    if(root != NULL) {
-      if(root->left != NULL) {
-	printInOrderPrivate(root->left);
-      }
-      
-      if(root->ascii != -1) {
-	cout << "Frequency: " << root->frequency << endl;
-      }
-      
-      if(root->right != NULL) {
-	printInOrderPrivate(root->right);
-      }
-    }
-    else {
-      cout << "Tree is empty\n";
-    }
-  }
 
   void set_bit_value_private(node * root) {
     if(root != NULL) {
@@ -78,7 +59,7 @@ private:
   void build_bit_strings_private(node * root) {
     string s;
     int i;
-    char c;
+    //char c;
     std::ostringstream ss;
     
     if(root != NULL) {
@@ -92,13 +73,12 @@ private:
       }
       
       if(root->ascii != -1) {
-	//library lib;
-
-	//root->bit_string;
-	//lib = {}
-	//library.push_back();
-	c = root->ascii;
-	cout << "Frequency of " << c << ": " << root->frequency << " Bit string: " << root->bit_string << endl;
+        library l = {root->ascii,root->bit_string};
+	//c = l.ascii;
+	//cout << "ascii: " << c << " int: " << l.bit_string << endl;
+	lib.push_back(l);
+	//c = root->ascii;
+	//cout << "Frequency of " << c << ": " << root->frequency << " Bit string: " << root->bit_string << endl;
       }
       
       if(root->right != NULL) {
@@ -187,12 +167,21 @@ public:
     }    
   }
 
+  void makeCode() {
+    int i;
+    ofstream library_file;
+    
+    library_file.open("library.txt");
+
+    for(i = 0; i < table_size; i++) {
+      library_file << lib[i].ascii << " " << lib[i].bit_string << endl;
+    }
+
+    library_file.close();
+  }
+  
   void set_bit_value() {
     set_bit_value_private(root);
-  }
-
-  void printInOrder() {
-    printInOrderPrivate(root);
   }
 
   void build_bit_strings() {
@@ -334,7 +323,7 @@ int main() {
       repr->build_tree();
       repr->set_bit_value();
       repr->build_bit_strings();
-      //repr->printInOrder();
+      repr->makeCode();
       still_running = false;
       break;
 
