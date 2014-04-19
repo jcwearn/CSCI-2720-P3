@@ -1,6 +1,17 @@
 #include <iostream>
 #include <fstream>
+#include <vector>
+#include <algorithm>
 using namespace std;
+
+struct table {
+    int ascii;
+    int value;
+};
+
+bool compare_table(const table& a, const table& b) {
+    return a.value > b.value;
+}
 
 class String_repr {
 private:
@@ -9,8 +20,10 @@ public:
 };
 
 class Freq_table {
-private:
+private:  
   int freq[256];
+  vector<table> freq_resized;
+  int table_size;
 
 public:
   Freq_table();
@@ -19,27 +32,49 @@ public:
   void print_freq() {
     int i;
 
-    for(i = 0; i < 256; i++) {
-      if(freq[i] != 0)
-	cout << "Freq " << i << " " << freq[i] << endl;
+    for(i = 0; i < table_size; i++) {
+      cout << "Freq of " << freq_resized[i].ascii << " : " << freq_resized[i].value << endl; 
     }
   }
+  
+  /*
+  void delete_freq_resized() {
+    delete [] freq_resized;
+    }*/
 };
 
 Freq_table::Freq_table(string s) {
-  int i;
+  int i,j;
   int ascii;
   int length = s.length();
+  int size = 0;
+
   
-  for(i = 0; i < length; i++) {
+  for(i = 0; i < 256; i++) {
     freq[i] = 0;
   }
-
+ 
   for(i = 0; i < length; i++) {
     ascii = (int)s.at(i);
-    freq[ascii]++;
+    freq[ascii]++;    
   }
+
+  for(i = 0; i < 256; i++) {
+    if(freq[i] > 0)
+      size++;
+  }
+
+  table_size = size;
   
+  for(i = 0, j=0; i < 256; i++) {
+    if(freq[i] > 0) {
+      table f_table = {i, freq[i]};
+      freq_resized.push_back(f_table);
+      j++;
+    }
+  }
+
+  sort(freq_resized.begin(), freq_resized.end(), compare_table);
 }
   
 int main() {
@@ -48,7 +83,17 @@ int main() {
   int user_case;
   bool still_running = true;
 
-  Freq_table* freq = new Freq_table("This is a test");
+  ifstream sample_file("sample.txt");
+  string temp;
+  string sample_string;
+    
+  while(getline(sample_file, temp)) {
+    sample_string += temp;
+  }
+
+  sample_file.close();
+
+  Freq_table* freq = new Freq_table(sample_string);
   freq->print_freq();
 
   cout << "Please choose from the following:\n\n";
@@ -78,9 +123,7 @@ int main() {
     }
     
     switch (user_case) {
-    case 1:
-
-      
+    case 1:     
       
       still_running = false;
       break;
@@ -99,6 +142,8 @@ int main() {
     }
   
   }
+
+  //freq->delete_freq_resized();
 
   cout << user_input << endl;
   return 0;
