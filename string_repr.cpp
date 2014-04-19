@@ -9,6 +9,7 @@ struct table {
     int value;
 };
 
+//function to sort table<vector>
 bool compare_table(const table& a, const table& b) {
     return a.value > b.value;
 }
@@ -29,11 +30,14 @@ public:
   Freq_table();
   Freq_table(string s);
 
+  //function that prints out freq vector
   void print_freq() {
     int i;
+    char c;
 
     for(i = 0; i < table_size; i++) {
-      cout << "Freq of " << freq_resized[i].ascii << " : " << freq_resized[i].value << endl; 
+      c = freq_resized[i].ascii;
+      cout << "Freq of " << c << " : " << freq_resized[i].value << endl; 
     }
   }
   
@@ -49,23 +53,26 @@ Freq_table::Freq_table(string s) {
   int length = s.length();
   int size = 0;
 
-  
+  //initializes each element of freq[] to 0
   for(i = 0; i < 256; i++) {
     freq[i] = 0;
   }
- 
+
+  //finds the frequencies of each char in input string
   for(i = 0; i < length; i++) {
     ascii = (int)s.at(i);
     freq[ascii]++;    
   }
 
+  //finds the size for the resized vector that stores frequency data
   for(i = 0; i < 256; i++) {
     if(freq[i] > 0)
       size++;
   }
 
   table_size = size;
-  
+
+  //adds frequencies to the vector
   for(i = 0, j=0; i < 256; i++) {
     if(freq[i] > 0) {
       table f_table = {i, freq[i]};
@@ -74,6 +81,7 @@ Freq_table::Freq_table(string s) {
     }
   }
 
+  //sorts the newly filled vector
   sort(freq_resized.begin(), freq_resized.end(), compare_table);
 }
   
@@ -83,10 +91,12 @@ int main() {
   int user_case;
   bool still_running = true;
 
+  //creates variable to read in from sample.txt
   ifstream sample_file("sample.txt");
   string temp;
   string sample_string;
-    
+
+  //reads in sample.txt and stores in sample_string
   while(getline(sample_file, temp)) {
     sample_string += temp;
   }
@@ -94,14 +104,15 @@ int main() {
   sample_file.close();
 
   Freq_table* freq = new Freq_table(sample_string);
-  freq->print_freq();
 
+  //display options for prompt
   cout << "Please choose from the following:\n\n";
   cout << "1: Build the library file from sample.txt\n";
   cout << "2: Print the charater list and frequency of each char in sample.txt\n";
   cout << "3: Encode a message\n";
   cout << "4: Decode a message\n\n";
 
+  //creates cases for each option in the prompt
   while(still_running) {
     cout << ">> ";
     cin >> user_input;
@@ -111,8 +122,6 @@ int main() {
     
     //checks if user input is invalid
     if(user_input.length() != 1) {
-      
-      cout << user_input.length() << endl;
       user_case = -1;
     }
     
@@ -123,19 +132,23 @@ int main() {
     }
     
     switch (user_case) {
-    case 1:     
-      
+    case 1:           
       still_running = false;
       break;
+
     case 2:
+      freq->print_freq();
       still_running = false;
       break;
+      
     case 3:
       still_running = false;
       break;
+      
     case 4:
       still_running = false;
       break;
+      
     default:
       cout << "Invalid input.  Please enter a numerical value 1-4\n";
       break;
@@ -143,8 +156,5 @@ int main() {
   
   }
 
-  //freq->delete_freq_resized();
-
-  cout << user_input << endl;
   return 0;
 }
