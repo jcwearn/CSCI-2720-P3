@@ -25,8 +25,9 @@ bool compare_table(const table& a, const table& b) {
 class String_repr {
 private:
   vector<table> freq;
-  vector<node> trees;
+  vector<node*> trees;
   int table_size;
+  node * root;
   
 public:
   String_repr();
@@ -35,7 +36,12 @@ public:
   void init_nodes() {
     int i;
     for(i = 0; i < table_size; i++) {
-      node n = {NULL,NULL,freq[i].value,0,freq[i].ascii};
+      node * n;// = {NULL,NULL,freq[i].value,0,freq[i].ascii};
+      n->left_child = NULL;
+      n->right_child = NULL;
+      n->frequency = freq[i].value;
+      n->value = 0;
+      n->ascii = freq[i].ascii;
       trees.push_back(n);
     }
   }
@@ -43,13 +49,20 @@ public:
   void makeCode() {
     int vector_size = trees.size();
     
-    while(vector_size != 0) {
-      int sum = trees.at(0).frequency + trees.at(1).frequency;
-      node n = {&trees.at(0), &trees.at(1), sum, 0, -1};
-      trees.at(1).value = 1;
+    while(vector_size > 1) {
+      int sum = trees.at(0)->frequency + trees.at(1)->frequency; // .frequency + trees.at(1).frequency;
+      node * n;// = {&trees.at(0), &trees.at(1), sum, 0, -1};
+      n->left_child = trees.at(0);
+      n->right_child = trees.at(1);
+      n->frequency = sum;
+      n->value = 0;
+      n->ascii = -1;
+      trees.at(1)->value = 1; //.value = 1;
 
       trees.erase(trees.begin(),trees.begin()+1);
       trees.push_back(n);
+      vector_size--;
+      root = n;
     }
   }
 };
@@ -153,6 +166,9 @@ int main() {
   sample_file.close();
 
   Freq_table* freq = new Freq_table(sample_string);
+  String_repr* repr = new String_repr(freq->get_freq(), freq->get_table_size());
+
+  repr->init_nodes();
 
   //display options for prompt
   cout << "Please choose from the following:\n\n";
@@ -181,7 +197,8 @@ int main() {
     }
     
     switch (user_case) {
-    case 1:           
+    case 1:
+      repr->makeCode();
       still_running = false;
       break;
 
