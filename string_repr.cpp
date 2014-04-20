@@ -29,10 +29,6 @@ bool compare_table(const table& a, const table& b) {
     return a.frequency < b.frequency;
 }
 
-/*
-bool compare_node(const node& a, const node& b) {
-  return a->frequency < b->frequency;
-  }*/
 
 class String_repr {
 private:
@@ -40,6 +36,7 @@ private:
   vector<library> lib;
   vector<node*> trees;
   int table_size;
+  double compression;
   int tree_size;
   node * root;
 
@@ -59,7 +56,7 @@ private:
   void build_bit_strings_private(node * root) {
     string s;
     int i;
-    //char c;
+
     std::ostringstream ss;
     
     if(root != NULL) {
@@ -74,11 +71,7 @@ private:
       
       if(root->ascii != -1) {
         library l = {root->ascii,root->bit_string};
-	//c = l.ascii;
-	//cout << "ascii: " << c << " int: " << l.bit_string << endl;
 	lib.push_back(l);
-	//c = root->ascii;
-	//cout << "Frequency of " << c << ": " << root->frequency << " Bit string: " << root->bit_string << endl;
       }
       
       if(root->right != NULL) {
@@ -98,6 +91,10 @@ private:
 public:
   String_repr();
   String_repr(vector<table> t, int size);
+
+  double get_compression() {
+    return compression;
+  }
 
   void init_nodes() {
     int i;
@@ -179,6 +176,78 @@ public:
 
     library_file.close();
   }
+
+  string encode(string s) {
+    int i,j;
+    int ascii;
+    int length = s.length();
+    double uncompressed = length * 8;
+    double compressed;
+    string bit_string;
+    double comp_ratio;
+
+    for(i = 0; i < length; i++) {
+      ascii = (int)s.at(i);
+      for(j = 0; j < table_size; j++) {
+	if(ascii == lib[j].ascii) {
+	  bit_string += lib[j].bit_string;
+	  break;
+	}
+      }
+    }
+
+   compressed = bit_string.length();
+   comp_ratio = uncompressed/compressed;
+
+    compression = comp_ratio;
+    
+    return bit_string;
+  }
+
+  string decode(string s) {
+    string substr;
+    string decoded;
+    int i; 
+    int delim;
+    char c;
+
+    delim = s.find(" ");
+
+    if(delim >= 0) {
+      cout << "Has spaces\n";
+      while((delim = s.find(" ")) != -1) {
+	substr = s.substr(0, delim);
+	cout << "substr: " << substr << endl;
+	cout << "Delim: " << delim << endl;
+	for(i = 0; i < table_size; i++) {
+	  if(substr == lib[i].bit_string) {
+	    c = lib[i].ascii;
+	    decoded += c;
+	    break;
+	  }
+	}
+	s = s.substr(delim+1);
+      }
+      for(i = 0; i < table_size; i++) {
+	if(substr == lib[i].bit_string) {
+	  c = lib[i].ascii;
+	  decoded += c;
+	  break;
+	}
+      }
+    }
+    else {
+      cout << "Does not have spaces\n";
+      for(i = 0; i < table_size; i++) {
+	if(s == lib[i].bit_string) {
+	  c = lib[i].ascii;
+	  decoded += c;
+	  break;
+	}
+      }
+    }
+    return decoded;
+  }
   
   void set_bit_value() {
     set_bit_value_private(root);
@@ -205,7 +274,7 @@ public:
   Freq_table();
   Freq_table(string s);
 
-  //function that prints out freq vector
+  //function that prppints out freq vector
   void print_freq() {
     int i;
     char c;
@@ -272,6 +341,7 @@ Freq_table::Freq_table(string s) {
   
 int main() {
   string user_input;
+  string output;
   char user_input_aschar;
   int user_case;
   bool still_running = true;
@@ -304,6 +374,7 @@ int main() {
   while(still_running) {
     cout << ">> ";
     cin >> user_input;
+    cin.ignore();
     user_input_aschar = user_input.at(0);
     
     
@@ -317,12 +388,13 @@ int main() {
 	user_case =  user_input_aschar - '0';
       }
     }
+
+    repr->build_tree();
+    repr->set_bit_value();
+    repr->build_bit_strings();
     
     switch (user_case) {
     case 1:
-      repr->build_tree();
-      repr->set_bit_value();
-      repr->build_bit_strings();
       repr->makeCode();
       still_running = false;
       break;
@@ -333,10 +405,25 @@ int main() {
       break;
       
     case 3:
+      cout << "Please enter the text to be encoded: \n";
+      //cin.clear();
+      cin >> user_input;
+      cin.ignore();
+      
+      output = repr->encode(user_input);
+      cout << "The encoded text is: " << output << endl;
+      cout << "The compression ratio is: " << repr->get_compression() << endl;
       still_running = false;
       break;
       
     case 4:
+      cout << "Please enter an encoded message:\n";
+      //cin >> noskipws >> user_input;
+      //cin.ignore();
+      cin.clear();
+      std::getline(std::cin, user_input);
+      output = repr->decode(user_input);
+      cout << "The decoded text is: " << output << endl;
       still_running = false;
       break;
       
